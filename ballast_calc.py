@@ -7,9 +7,9 @@ booster_loc = 187.126706 # in in from tip, will change based on ballast location
 true_le3_moi = {"xx": 857590.358, "yy": 857590.358, "zz": 1575.98} # in in^2 lb
 
 # sd moi's
-caldera_moi = {"xx": 10394.473, "yy": 10396.598, "zz": 242.361, "dist": 50.294} # in in^2 lb, dist in in from tip
-keroTank_moi = {"xx": 2198.732, "yy": 2198.999, "zz": 177.349, "dist": 118.854674} # in in^2 lb, dist in in from tip
-le3Top_moi = {"xx": 18454.228, "yy": 18456.942, "zz": 228.432607, "dist": booster_loc, "mass": 1000} # in in^2 lb, dist in in from tip
+caldera_moi = {"xx": 10394.473, "yy": 10396.598, "zz": 242.361, "dist": 50.294, "mass": 23.3625} # in in^2 lb, dist in in from tip, mass in lb
+keroTank_moi = {"xx": 2198.732, "yy": 2198.999, "zz": 177.349, "dist": 118.854674, "mass": 33.818} # in in^2 lb, dist in in from tip, mass in lb    
+le3Top_moi = {"xx": 18454.228, "yy": 18456.942, "zz": 228.432607, "dist": booster_loc, "mass": 46.1461969} # in in^2 lb, dist in in from tip, mass in lb
 
 
 material_densities = pd.read_csv("material_densities.csv").set_index("Material")
@@ -112,8 +112,65 @@ def calculate_cg(masses, positions):
     
     return cg
 
-def tube_moi(length):
-    pass
+def tube_moi(length, dist_from_ref=0.0, density=0.06):
+    """
+    Calculate the mass, center of gravity, and moment of inertia for a hollow 
+    cylindrical tube (hollow cylinder) about its centroidal axes.
+    
+    Returns a dictionary compatible with sd_moi function.
+    
+    Parameters
+    ----------
+    length : float
+        Tube length (inches).
+    dist_from_ref : float, optional
+        Distance from reference point (e.g., tip) to the start of the tube (default: 0.0).
+        The tube's center of mass will be at dist_from_ref + length/2.
+    density : float, optional
+        Material density (default: 0.06 lb/in³).
+    
+    Returns
+    -------
+    dict
+        Dictionary compatible with sd_moi function containing:
+        - "mass": mass in pounds
+        - "xx": moment of inertia about x-axis (lb·in²) about tube's center of mass
+        - "yy": moment of inertia about y-axis (lb·in²) about tube's center of mass
+        - "zz": moment of inertia about z-axis (longitudinal, lb·in²) about tube's center of mass
+        - "dist": distance from reference point to tube's center of mass (inches)
+    """
+    # Fixed tube dimensions
+    inner_radius = 3.0  # inches
+    outer_radius = 3.085  # inches
+    
+    if length <= 0:
+        raise ValueError("length must be positive")
+    
+    # Calculate volume of hollow cylinder
+    volume = np.pi * length * (outer_radius**2 - inner_radius**2)
+    
+    # Calculate mass
+    mass = density * volume
+    
+    # Moment of inertia about longitudinal axis (z-axis)
+    # For hollow cylinder: Izz = 0.5 * m * (R_outer² + R_inner²)
+    Izz = 0.5 * mass * (outer_radius**2 + inner_radius**2)
+    
+    # Moment of inertia about transverse axes (x and y)
+    # For hollow cylinder: Ixx = Iyy = (1/12) * m * (3*(R_outer² + R_inner²) + L²)
+    Ixx = Iyy = (1.0 / 12.0) * mass * (3 * (outer_radius**2 + inner_radius**2) + length**2)
+    
+    # Center of gravity is at the geometric center of the tube
+    # Distance from reference point to tube's center of mass
+    dist = dist_from_ref + length / 2.0
+    
+    return {
+        "mass": mass,
+        "xx": Ixx,
+        "yy": Iyy,
+        "zz": Izz,
+        "dist": dist,
+    }
 
 def cylinder_moi(radius_in, length_in, material="all"):
     """
