@@ -1,4 +1,6 @@
 Material,Density_lb_per_in3,Approx_Cost_per_lb_USD,Notes
+
+Material,Density_lb_per_in3,Approx_Cost_per_lb_USD,Notes
 Low‑carbon steel (A36/1018),0.283,1.2,Very easy to acquire from any metal supplier; extremely common and cheap.
 Alloy steel (4140),0.284,1.8,Widely available; often used for shafts and tooling—slightly higher cost but still common.
 Stainless steel 304,0.289,3.0,"Common stainless; very easy to find, widely stocked, good corrosion resistance."
