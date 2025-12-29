@@ -1,16 +1,15 @@
-Ballast_Type,Weight(lbs),Diameter(in),Length(in),Volume(in³),Density (lb/in³)
-Current Inventory,,,,,
+Ballast_Type,Weight_lbs,Diameter_in,Length_in,Volume_in3,Density_lb_per_in3
 Steel,33.281,2.5,24.125,118.35,0.281
 Copper_Tellurium,48.5,4,12,150.8,0.322
-,,,,,
-Material,Density_lb_per_in3,Approx_Cost_per_lb_USD,Notes,,
-Low‑carbon steel (A36/1018),0.283,1.2,Very easy to acquire from any metal supplier; extremely common and cheap.,,
-Alloy steel (4140),0.284,1.8,Widely available; often used for shafts and tooling—slightly higher cost but still common.,,
-Stainless steel 304,0.289,3.0,"Common stainless; very easy to find, widely stocked, good corrosion resistance.",,
-Stainless steel 316,0.29,4.0,More corrosion‑resistant than 304; available but slightly more expensive.,,
-Aluminum 6061‑T6,0.0975,2.5,"Extremely common; highly available, cheap, and easy to machine.",,
-Brass (C360),0.307,4.0,Common free‑machining brass; available at many suppliers but more expensive than steel.,,
-Copper (C110),0.323,5.0,Common high‑conductivity copper; easy to find but price varies with market.,,
-Titanium (Grade 5),0.16,20.0,Available but expensive; typically purchased from specialty suppliers.,,
-Cast iron,0.26,1.0,Common for machine bases; very cheap and available but brittle and messy to machine.,,
-Inconel 625,0.305,25.0,High‑performance alloy; very expensive and usually only from specialty distributors.,,
+
+Material,Density_lb_per_in3,Approx_Cost_per_lb_USD,Notes
+Low-carbon steel (A36/1018),0.283,1.2,Very easy to acquire from any metal supplier; extremely common and cheap
+Alloy steel (4140),0.284,1.8,Widely available; often used for shafts and tooling—slightly higher cost but still common
+Stainless steel 304,0.289,3.0,Common stainless; very easy to find; good corrosion resistance
+Stainless steel 316,0.29,4.0,More corrosion-resistant than 304; slightly more expensive
+Aluminum 6061-T6,0.0975,2.5,Extremely common; cheap and easy to machine
+Brass (C360),0.307,4.0,Common free-machining brass; more expensive than steel
+Copper (C110),0.323,5.0,Common high-conductivity copper; price varies with market
+Titanium (Grade 5),0.16,20.0,Available but expensive; specialty suppliers
+Cast iron,0.26,1.0,Very cheap and common; brittle and messy to machine
+Inconel 625,0.305,25.0,High-performance alloy; very expensive; specialty distributors
