@@ -1,4 +1,5 @@
 Ballast_Type,Weight(lbs),Diameter(in),Length(in),Volume(in³),Density (lb/in³)
+Current Inventory,,,,,
 Steel,33.281,2.5,24.125,118.35,0.281
 Copper_Tellurium,48.5,4,12,150.8,0.322
 
