@@ -232,6 +232,52 @@ def parallel_axis_theorem(I_cm, m, d):
     """
     return I_cm + m * d**2
 
+def calculate_current_SD_MOI():
+    """
+    Return the Current Moment of Inertia of SD by adding current known components: Caldera, keroTank, le3Top
+    """
+    #Mass of Each System
+    caldera_mass = caldera_moi["mass"]
+    kero_mass = keroTank_moi["mass"]
+    le3Top_mass = le3Top_moi["mass"]
+
+    #Center of Mass Distance
+    caldera_dist = caldera_moi["dist"]
+    kero_dist = keroTank_moi["dist"]
+    le3Top_dist = le3Top_moi["dist"]
+
+    #New Center of Mass of Combined System
+    new_COM = (caldera_mass * caldera_dist + kero_mass * kero_dist + le3Top_mass * le3Top_dist) / (caldera_mass + kero_mass + le3Top_mass)
+
+    #Calculations for New MOI
+    caldera_xx = parallel_axis_theorem(caldera_moi["xx"], caldera_mass, caldera_dist - new_COM)
+    kero_xx = parallel_axis_theorem(keroTank_moi["xx"], kero_mass, kero_dist - new_COM)
+    le3Top_xx = parallel_axis_theorem(le3Top_moi["xx"], le3Top_mass, le3Top_dist - new_COM)
+    
+    caldera_yy = parallel_axis_theorem(caldera_moi["yy"], caldera_mass, caldera_dist - new_COM)
+    kero_yy = parallel_axis_theorem(keroTank_moi["yy"], kero_mass, kero_dist - new_COM)
+    le3Top_yy = parallel_axis_theorem(le3Top_moi["yy"], le3Top_mass, le3Top_dist - new_COM)
+
+    caldera_zz = caldera_moi["zz"]
+    kero_zz = keroTank_moi["zz"]
+    le3Top_zz = le3Top_moi["zz"]
+
+    #Assuming Symmetry ZZ components can just be added, if COM lies on the same centerline, meaning x and y values are same
+    SD_xx = caldera_xx + kero_xx + le3Top_xx
+    SD_yy = caldera_yy + kero_yy + le3Top_yy
+    SD_zz = caldera_zz + kero_zz + le3Top_zz
+
+    return {"xx": SD_xx, "yy": SD_yy, "zz": SD_zz}
+
+def calculate_ballast_moi():
+    SD_current_moi = calculate_current_SD_MOI()
+    SD_xx = SD_current_moi["xx"]
+    SD_yy = SD_current_moi["yy"]
+    SD_zz = SD_current_moi["zz"]
+    
+    return {"xx": true_le3_moi["xx"] - SD_xx, "yy": true_le3_moi["yy"] - SD_yy, "zz": true_le3_moi["zz"] - SD_zz}
+    
+
 if __name__ == "__main__":
 
 
