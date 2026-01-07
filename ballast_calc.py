@@ -3,8 +3,9 @@ import pandas as pd
 
 booster_loc = 187.126706 # in in from tip, will change based on ballast location + length
 
-# goal/le3 moi
+# goal/le3 moi & mass
 true_le3_moi = {"xx": 857590.358, "yy": 857590.358, "zz": 1575.98} # in in^2 lb
+true_le3_mass = 181.123
 
 # sd moi's
 caldera_moi = {"xx": 10394.473, "yy": 10396.598, "zz": 242.361, "dist": 50.294, "mass": 23.3625} # in in^2 lb, dist in in from tip, mass in lb
@@ -236,6 +237,7 @@ def calculate_current_SD_MOI():
     """
     Return the Current Moment of Inertia of SD by adding current known components: Caldera, keroTank, le3Top
     """
+    
     #Mass of Each System
     caldera_mass = caldera_moi["mass"]
     kero_mass = keroTank_moi["mass"]
@@ -261,11 +263,64 @@ def calculate_current_SD_MOI():
     caldera_zz = caldera_moi["zz"]
     kero_zz = keroTank_moi["zz"]
     le3Top_zz = le3Top_moi["zz"]
+    
 
     #Assuming Symmetry ZZ components can just be added, if COM lies on the same centerline, meaning x and y values are same
     SD_xx = caldera_xx + kero_xx + le3Top_xx
     SD_yy = caldera_yy + kero_yy + le3Top_yy
     SD_zz = caldera_zz + kero_zz + le3Top_zz
+
+    return {"xx": SD_xx, "yy": SD_yy, "zz": SD_zz}
+
+def calculate_current_SD_MOI_with_Ballast(ballast1, ballast2):
+    """
+    Return the Current Moment of Inertia of SD by adding current known components: Caldera, keroTank, le3Top
+    """
+    
+    #Mass of Each System
+    caldera_mass = caldera_moi["mass"]
+    kero_mass = keroTank_moi["mass"]
+    le3Top_mass = le3Top_moi["mass"]
+    ballast1_mass = ballast1["mass"]
+    ballast2_mass = ballast1["mass"]
+
+    #Center of Mass Distance
+    caldera_dist = caldera_moi["dist"]
+    kero_dist = keroTank_moi["dist"]
+    le3Top_dist = le3Top_moi["dist"]
+    ballast1_dist = ballast1["dist"]
+    ballast2_dist = ballast2["dist"]
+
+    ballast1_cg = ballast1_mass * ballast1_dist
+    ballast2_cg = ballast2_mass * ballast2_dist
+
+    #New Center of Mass of Combined System
+    new_COM = (caldera_mass * caldera_dist + kero_mass * kero_dist + le3Top_mass * le3Top_dist + ballast1_cg + ballast2_cg) / (caldera_mass + kero_mass + le3Top_mass + ballast1_mass + ballast2_mass)
+
+    #Calculations for New MOI
+    caldera_xx = parallel_axis_theorem(caldera_moi["xx"], caldera_mass, caldera_dist - new_COM)
+    kero_xx = parallel_axis_theorem(keroTank_moi["xx"], kero_mass, kero_dist - new_COM)
+    le3Top_xx = parallel_axis_theorem(le3Top_moi["xx"], le3Top_mass, le3Top_dist - new_COM)
+    ballast1_xx = parallel_axis_theorem(ballast1["xx"], ballast1_mass, ballast1_dist - new_COM)
+    ballast2_xx = parallel_axis_theorem(ballast2["xx"], ballast2_mass, ballast2_dist - new_COM)
+    
+    caldera_yy = parallel_axis_theorem(caldera_moi["yy"], caldera_mass, caldera_dist - new_COM)
+    kero_yy = parallel_axis_theorem(keroTank_moi["yy"], kero_mass, kero_dist - new_COM)
+    le3Top_yy = parallel_axis_theorem(le3Top_moi["yy"], le3Top_mass, le3Top_dist - new_COM)
+    ballast1_yy = parallel_axis_theorem(ballast1["yy"], ballast1_mass, ballast1_dist - new_COM)
+    ballast2_yy = parallel_axis_theorem(ballast2["yy"], ballast2_mass, ballast2_dist - new_COM)
+
+    caldera_zz = caldera_moi["zz"]
+    kero_zz = keroTank_moi["zz"]
+    le3Top_zz = le3Top_moi["zz"]
+    ballast1 = ballast1["zz"]
+    ballast2 = ballast2["zz"]
+    
+
+    #Assuming Symmetry ZZ components can just be added, if COM lies on the same centerline, meaning x and y values are same
+    SD_xx = caldera_xx + kero_xx + le3Top_xx + ballast1_xx + ballast2_xx
+    SD_yy = caldera_yy + kero_yy + le3Top_yy + ballast1_yy + ballast1_yy
+    SD_zz = caldera_zz + kero_zz + le3Top_zz + ballast1_zz + ballast1_zz
 
     return {"xx": SD_xx, "yy": SD_yy, "zz": SD_zz}
 
@@ -276,6 +331,85 @@ def calculate_ballast_moi():
     SD_zz = SD_current_moi["zz"]
     
     return {"xx": true_le3_moi["xx"] - SD_xx, "yy": true_le3_moi["yy"] - SD_yy, "zz": true_le3_moi["zz"] - SD_zz}
+
+def calculate_ballast_dimensions(density, step = 0.05, max_radius = 6):
+    """
+    Use triple intergal to solve for ballast dimensions given a Volume
+    Volume was found between the difference of mass between current LE3 and SD using a specified Density
+    Missing Mass / Density = Volume of Ballast
+    """
+    #Variables#
+    current_height = 6
+    max_height_b1 = 17.25  # Max height of first ballast
+    max_height_b2 = 12.7   # Max height of second ballast
+    best_height = 0
+    best_radius = 0
+    best_moi = 0
+    error = 100
+    
+    First_ballast_pos = 89.609 # Initial Position from tip
+    Second_ballast_pos = 156.103 # Final Position from tip
+     
+    ballast_MOI = calculate_ballast_moi()
+    
+    ballast_mass = true_le3_mass - caldera_moi["mass"] - keroTank_moi["mass"] - le3Top_moi["mass"]
+    if ballast_mass <= 0:
+        raise ValueError("mass must be positive")
+    
+    ballast_volume = (ballast_mass / density) / 2
+    
+    #Calculations
+    while current_height <= max_height_b2:
+        radius = calculate_radius(ballast_volume, current_height)
+
+        if radius < 0.5: # Checks that radius is of reasonable value to manufacture, else skips iteration
+            current_height += step
+            continue
+
+        b1_xx, b1_yy, b1_zz = moi_of_cylinder(ballast_volume * density, radius, current_height)
+        b2_xx, b2_yy, b2_zz = moi_of_cylinder(ballast_volume * density, radius, current_height)
+
+        ballast1_dic = {
+            "mass": ballast_mass / 2, 
+            "dist": First_ballast_pos + current_height / 2, 
+            "xx": b1_xx,
+            "yy": b1_yy, 
+            "zz": b1_zz
+        }
+        ballast2_dic = {
+            "mass": ballast_mass / 2, 
+            "dist": Second_ballast_pos - current_height / 2, 
+            "xx": b2_xx,
+            "yy": b2_yy, 
+            "zz": b2_zz
+        }
+
+        new_moi = calculate_current_SD_MOI_with_Ballast(ballast1_dic, ballast2_dic)
+        diff_xx = new_moi["xx"] - true_le3_moi["xx"]
+        diff_yy = new_moi["yy"] - true_le3_moi["yy"]
+        diff_zz = new_moi["zz"] - true_le3_moi["zz"]
+
+        score = diff_xx ** 2 + diff_yy ** 2 + diff_zz ** 2
+
+        if score < error:
+            error = score
+            best_height = current_height
+            best_radius = best_radius
+            best_moi = new_moi
+    
+        current_height += step
+
+    return best_height, best_radius, best_moi
+
+
+
+def calculate_radius(volume, height):
+    return np.sqrt(volume / (height * np.pi))
+
+def moi_of_cylinder(mass, radius_in, length_in):
+    Izz = 0.5 * mass * radius_in**2
+    Ixx = Iyy = (1.0 / 12.0) * mass * (3 * radius_in**2 + length_in**2)
+    return Ixx, Iyy, Izz
     
 
 if __name__ == "__main__":
