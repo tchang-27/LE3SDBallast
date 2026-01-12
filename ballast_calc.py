@@ -345,7 +345,7 @@ def calculate_ballast_dimensions(density, step = 0.05, max_radius = 6):
     best_height = 0
     best_radius = 0
     best_moi = 0
-    error = 100
+    error = 10000
     
     First_ballast_pos = 89.609 # Initial Position from tip
     Second_ballast_pos = 156.103 # Final Position from tip
