@@ -284,12 +284,11 @@ def calculate_ballast_dimensions(density, step = 0.05, max_radius = 6):
     """
     #Variables#
     current_height = 6
-    max_height_b1 = 17.25  # Max height of first ballast
-    max_height_b2 = 12.7   # Max height of second ballast
+    max_height_b2 = 12.7   # Max height of ballasts
     best_height = 0
     best_radius = 0
     best_moi = 0
-    error = 10000
+    error = 10000000
     
     First_ballast_pos = 89.609 # Initial Position from tip
     Second_ballast_pos = 156.103 # Final Position from tip
@@ -306,7 +305,7 @@ def calculate_ballast_dimensions(density, step = 0.05, max_radius = 6):
     while current_height <= max_height_b2:
         radius = calculate_radius(ballast_volume, current_height)
 
-        if radius < 0.5: # Checks that radius is of reasonable value to manufacture, else skips iteration
+        if radius < 0.2: # Checks that radius is of reasonable value to manufacture, else skips iteration
             current_height += step
             continue
 
@@ -333,12 +332,12 @@ def calculate_ballast_dimensions(density, step = 0.05, max_radius = 6):
         diff_yy = new_moi["yy"] - true_le3_moi["yy"]
         diff_zz = new_moi["zz"] - true_le3_moi["zz"]
 
-        score = diff_xx ** 2 + diff_yy ** 2 + diff_zz ** 2
+        score = diff_xx  + diff_yy  + diff_zz
 
         if score < error:
             error = score
             best_height = current_height
-            best_radius = best_radius
+            best_radius = radius
             best_moi = new_moi
     
         current_height += step
@@ -354,7 +353,6 @@ def moi_of_cylinder(mass, radius_in, length_in):
     return Ixx, Iyy, Izz
 
 
-b_height, b_radius, b_moi = best_moicalculate_ballast_dimensions(0.5, step = 0.05, max_radius = 6)
+b_height, b_radius, b_moi = calculate_ballast_dimensions(0.3, step = 0.05, max_radius = 6)
 
 print(f"The best height is {b_height}. The best radius is {b_radius}. The best moi is {b_moi}.")
-
