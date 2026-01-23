@@ -313,14 +313,14 @@ def calculate_current_SD_MOI_with_Ballast(ballast1, ballast2):
     caldera_zz = caldera_moi["zz"]
     kero_zz = keroTank_moi["zz"]
     le3Top_zz = le3Top_moi["zz"]
-    ballast1 = ballast1["zz"]
-    ballast2 = ballast2["zz"]
+    ballast1_zz = ballast1["zz"]
+    ballast2_zz = ballast2["zz"]
     
 
     #Assuming Symmetry ZZ components can just be added, if COM lies on the same centerline, meaning x and y values are same
     SD_xx = caldera_xx + kero_xx + le3Top_xx + ballast1_xx + ballast2_xx
-    SD_yy = caldera_yy + kero_yy + le3Top_yy + ballast1_yy + ballast1_yy
-    SD_zz = caldera_zz + kero_zz + le3Top_zz + ballast1_zz + ballast1_zz
+    SD_yy = caldera_yy + kero_yy + le3Top_yy + ballast1_yy + ballast2_yy
+    SD_zz = caldera_zz + kero_zz + le3Top_zz + ballast1_zz + ballast2_zz
 
     return {"xx": SD_xx, "yy": SD_yy, "zz": SD_zz}
 
@@ -410,7 +410,7 @@ def moi_of_cylinder(mass, radius_in, length_in):
     return Ixx, Iyy, Izz
 
 
-b_height, b_radius, b_moi = best_moicalculate_ballast_dimensions(density, step = 0.05, max_radius = 6)
+b_height, b_radius, b_moi = best_moicalculate_ballast_dimensions(0.5, step = 0.05, max_radius = 6)
 
 print(f"The best height is {b_height}. The best radius is {b_radius}. The best moi is {b_moi}.")
 
