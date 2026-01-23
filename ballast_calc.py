@@ -401,8 +401,6 @@ def calculate_ballast_dimensions(density, step = 0.05, max_radius = 6):
 
     return best_height, best_radius, best_moi
 
-
-
 def calculate_radius(volume, height):
     return np.sqrt(volume / (height * np.pi))
 
@@ -410,13 +408,9 @@ def moi_of_cylinder(mass, radius_in, length_in):
     Izz = 0.5 * mass * radius_in**2
     Ixx = Iyy = (1.0 / 12.0) * mass * (3 * radius_in**2 + length_in**2)
     return Ixx, Iyy, Izz
-    
-
-if __name__ == "__main__":
 
 
-    '''
-    # Example: 4.5 in diameter aluminum cylinder, 10 in long.
-    result = cylinder_moi(radius_in=4.5 / 2, length_in=10.0, material="Alloy steel (4140)")
-    for material, values in result.items():
-        print(material, values)'''
+b_height, b_radius, b_moi = best_moicalculate_ballast_dimensions(density, step = 0.05, max_radius = 6)
+
+print(f"The best height is {b_height}. The best radius is {b_radius}. The best moi is {b_moi}.")
+
